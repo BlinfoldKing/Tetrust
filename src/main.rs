@@ -11,13 +11,15 @@ use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 
 struct Block {
-    shape: [[u8; 4]; 4]
+    shape: [[u8; 4]; 4],
+    position: [[[u8; 2]; 4]; 4]
 }
 
 struct Game {
     score: u64,
     gl: GlGraphics,
     well: [[i8; 10]; 22],
+    curr_block: Block
 }
 
 fn main() {
@@ -48,22 +50,51 @@ impl Game {
         return Game {
             score: 0,
             gl: _gl,
-            well: [[0; 10]; 22]
+            well: [[0; 10]; 22],
+            curr_block: Block::new() 
         }
     }
 
     #[cfg(debug_assertions)]
     fn render(&mut self) {
-        print!("{}[2J", 27 as char);  
-        for r in self.well.iter() {
+        print!("{}[2J", 27 as char);
+        let mut screen = self.well.clone();
+        for i in 0..4 {
+            for j in 0..4 {
+                let pos = self.curr_block.position;
+                screen
+                    [pos[i][j][0] as usize]
+                    [pos[i][j][1] as usize] = self.curr_block.shape[i][j] as i8;
+            }
+        }
+        for r in screen.iter() {
             println!("{:?}", r);
         }
     }
 }
 
 impl Block {
+    pub fn new () -> Self {
+        use rand::Rng;
+        use rand::thread_rng;
+
+        let mut pos: [[[u8; 2]; 4]; 4] = [[[0; 2]; 4]; 4];
+        for i in 0..4 {
+            for j in 0..4 {
+                pos[i][j] = [i as u8, j as u8];
+            }
+        }
+
+        let mut r = thread_rng();
+        
+        Block {
+            shape: block_type[r.gen_range(0, 7)],
+            position: pos 
+        }
+    }
+
     fn rotate(&mut self, n: u16) {
-        for _x in 1..n {
+        for _ in 1..n {
             for i in 0..4 { 
                 for j in 0..4 {
                     let mut tmp = self.shape[i][j];
@@ -123,4 +154,14 @@ const l_block: [[u8; 4]; 4] = [
     [7, 7, 0, 0],
     [0, 0, 0, 0]
 ];
-    
+
+const block_type: [[[u8; 4]; 4]; 7] = [
+    i_block,
+    o_block,
+    t_block,
+    s_block,
+    z_block,
+    j_block,
+    l_block
+];
+

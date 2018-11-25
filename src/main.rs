@@ -45,6 +45,11 @@ fn main() {
         if let Some(u) = e.update_args() {
             game.update();
         }
+        if let Some(b) = e.button_args() {
+            if b.state == ButtonState::Press {
+                game.pressed(&b.button);
+            }
+        }
     }
 }
 
@@ -101,6 +106,16 @@ impl Game {
             self.curr_block = Block::new();
         }
     }
+
+    fn pressed(&mut self, button: &Button) {
+        match button {
+            &Button::Keyboard(Key::Left)
+                if self.curr_block.colider[0] > 0 => self.curr_block.move_block("LEFT"),
+            &Button::Keyboard(Key::Right)
+                if self.curr_block.colider[2] < 10 => self.curr_block.move_block("RIGHT"),
+                _ => ()
+        }
+    }
 }
 
 impl Block {
@@ -150,6 +165,27 @@ impl Block {
             }
         }
     }
+
+    fn move_block(&mut self, dir: &str) {
+        for i in 0..4 {
+            for j in 0..4 {
+                match dir {
+                    "LEFT"  => self.position[i][j][0] -= 1,
+                    "RIGHT" => self.position[i][j][0] += 1,
+                    _ => ()
+                }
+            }
+        }
+        
+        
+
+        match dir {
+            "LEFT"  => self.colider[0] -= 1,
+            "RIGHT" => self.colider[2] += 1,
+            _ => ()
+        }
+    }
+
 }
 
 const i_block: [[u8; 4]; 4] = [

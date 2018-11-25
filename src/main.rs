@@ -86,6 +86,19 @@ impl Game {
                 }
             }
             self.curr_block.colider[1] += 1;
+        } else {
+            for i in 0..4 {
+                for j in 0..4 {
+                    let pos = self.curr_block.position;
+                    if self.curr_block.shape[i][j] > 0 {
+                        self.well
+                            [pos[i][j][0] as usize]
+                            [pos[i][j][1] as usize] = self.curr_block.shape[i][j] as i8;
+                    }
+                }
+            }
+
+            self.curr_block = Block::new();
         }
     }
 }

@@ -12,7 +12,8 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 
 struct Block {
     shape: [[u8; 4]; 4],
-    position: [[[u8; 2]; 4]; 4]
+    position: [[[u8; 2]; 4]; 4],
+    colider: [i8; 3]
 }
 
 struct Game {
@@ -36,10 +37,13 @@ fn main() {
     
     let mut game = Game::new(GlGraphics::new(opengl));
     
-    let mut events = Events::new(EventSettings::new()).ups(30);
+    let mut events = Events::new(EventSettings::new()).ups(6);
     while let Some(e) = events.next(&mut window) {
         if let Some(r) = e.render_args() {
             game.render();
+        }
+        if let Some(u) = e.update_args() {
+            game.update();
         }
     }
 }
@@ -62,13 +66,26 @@ impl Game {
         for i in 0..4 {
             for j in 0..4 {
                 let pos = self.curr_block.position;
-                screen
-                    [pos[i][j][0] as usize]
-                    [pos[i][j][1] as usize] = self.curr_block.shape[i][j] as i8;
+                if self.curr_block.shape[i][j] > 0 {
+                    screen
+                        [pos[i][j][0] as usize]
+                        [pos[i][j][1] as usize] = self.curr_block.shape[i][j] as i8;
+                }
             }
         }
         for r in screen.iter() {
             println!("{:?}", r);
+        }
+    }
+
+    fn update(&mut self) {
+        if self.curr_block.colider[1] + 1 < 22 {
+            for i in 0..4 {
+                for j in 0..4 {
+                    self.curr_block.position[i][j][0] += 1;
+                }
+            }
+            self.curr_block.colider[1] += 1;
         }
     }
 }
@@ -86,10 +103,26 @@ impl Block {
         }
 
         let mut r = thread_rng();
+        let s = block_type[r.gen_range(0, 7)];
+        
+        let mut right_col: i8 = 0;
+        let mut down_col: i8 = 0;
+        let mut left_col: i8 = -1;
+
+        for i in 0..4 {
+            for j in 0..4 {
+                if s[i][j] > 0 {
+                    if left_col == -1 { left_col = j as i8; }
+                    if right_col < i as i8 {down_col = j as i8; }
+                    if down_col < j as i8 { down_col = i as i8; }
+                }
+            }
+        }
         
         Block {
-            shape: block_type[r.gen_range(0, 7)],
-            position: pos 
+            shape: s,
+            position: pos,
+            colider: [left_col, down_col, right_col],
         }
     }
 

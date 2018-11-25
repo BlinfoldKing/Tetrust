@@ -79,7 +79,7 @@ impl Game {
     }
 
     fn update(&mut self) {
-        if self.curr_block.colider[1] + 1 < 22 {
+        if self.curr_block.colider[1] + 1 <= 21 {
             for i in 0..4 {
                 for j in 0..4 {
                     self.curr_block.position[i][j][0] += 1;
@@ -113,7 +113,7 @@ impl Block {
             for j in 0..4 {
                 if s[i][j] > 0 {
                     if left_col == -1 { left_col = j as i8; }
-                    if right_col < i as i8 {down_col = j as i8; }
+                    if right_col < i as i8 { right_col = j as i8; }
                     if down_col < j as i8 { down_col = i as i8; }
                 }
             }
